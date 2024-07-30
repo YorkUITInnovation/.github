@@ -419,3 +419,45 @@ Once installation is complete
 1. <https://docs.docker.com/engine/install/ubuntu/#uninstall-docker-engine> [↑](#footnote-ref-2361)
 
 2. <https://docs.docker.com/engine/install/ubuntu/#install-from-a-package> [↑](#footnote-ref-31270)
+
+### Configuring Nginx
+
+1. Make sure moodle config.php is configured with `$CFG->reverseproxy = true;` and `$CFG->sslproxy  = true`.
+2. Add the following nginx configuration. Modify as needed.
+
+```
+server
+{
+
+        server_name _;
+
+        listen 80 default_server;
+        listen [::]:80 default_server;
+
+        root /var/www/html;
+        index index.html index.htm index.nginx-debian.html;
+
+        return 301 https://$host$request_uri;
+
+}
+
+server
+{
+        server_name your.hostname.ca;
+        listen 443 ssl;
+        listen [::]:443 ssl;
+
+        ssl_certificate /etc/letsencrypt/live/your.hostname.ca/cert.pem;
+        ssl_certificate_key /etc/letsencrypt/live/your.hostname.ca/privkey.pem;
+        include /etc/letsencrypt/options-ssl-nginx.conf;
+        ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+        location /
+        {
+                proxy_read_timeout 600s;
+                proxy_pass http://127.0.0.1:8080/;
+                proxy_redirect off;
+                client_max_body_size 69G;
+        }
+}
+```
