@@ -91,7 +91,7 @@ sudo service docker stop
 
 3. Rsync the default docker folder to /data/docker_data  
 ```
-rsync –avz /var/liv/docker /data/docker_data
+rsync –avz /var/lib/docker /data/docker_data
 ```
 
 4. Create daemon.json and add path to new location. Nano is used here, but any editor will work.  
