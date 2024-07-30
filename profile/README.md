@@ -415,12 +415,10 @@ docker-compose up -d
 2. Follow the installation instructions
 3. Use the MySQL credentials provided.
 
-Once installation is complete
-1. <https://docs.docker.com/engine/install/ubuntu/#uninstall-docker-engine> [↑](#footnote-ref-2361)
+### Configure the front-end server
+Coming soon!
 
-2. <https://docs.docker.com/engine/install/ubuntu/#install-from-a-package> [↑](#footnote-ref-31270)
-
-### Configuring Nginx
+## Configuring Nginx
 
 1. Make sure moodle config.php is configured with `$CFG->reverseproxy = true;` and `$CFG->sslproxy  = true`.
 2. Add the following nginx configuration. Modify as needed.
@@ -461,3 +459,8 @@ server
         }
 }
 ```
+
+### footnotes
+1. <https://docs.docker.com/engine/install/ubuntu/#uninstall-docker-engine> [↑](#footnote-ref-2361)
+
+2. <https://docs.docker.com/engine/install/ubuntu/#install-from-a-package> [↑](#footnote-ref-31270)
