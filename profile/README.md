@@ -1,6 +1,6 @@
 # Cria Installation Manual
 
-These institutions are specific to installing Cria with a docker using a Virtual Machine provided by UIT SMS.
+These instructions are specific to installing Cria with a docker using a Virtual Machine provided by UIT SMS.
 
 # Virtual Machine (VM) Requirements
 
