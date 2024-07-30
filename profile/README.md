@@ -460,7 +460,7 @@ server
 }
 ```
 
-### footnotes
+### Footnotes
 1. <https://docs.docker.com/engine/install/ubuntu/#uninstall-docker-engine> [↑](#footnote-ref-2361)
 
 2. <https://docs.docker.com/engine/install/ubuntu/#install-from-a-package> [↑](#footnote-ref-31270)
