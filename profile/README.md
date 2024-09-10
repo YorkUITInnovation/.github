@@ -119,10 +119,8 @@ mkdir cria-prod
 cd cria-prod
 ```
 2. Copy past the following code into a file named docker-compose.yml
-```
-  version: '3.7'
+```yaml
   services:
-    # Cria-Front backend redis    
     redis:
       image: 'docker.io/redis:latest'
       environment:
@@ -131,17 +129,41 @@ cd cria-prod
         - '127.0.0.1:6379:6379'
       volumes:
         - ./redis_data/redis.conf:/usr/local/etc/redis/redis.conf
+    # Cria-Front MySQL
+    mysql:
+      image: 'docker.io/mysql:8.4'
+      command: [ 'mysqld','--mysql-native-password=ON' ]
+      restart: always
+      environment:
+        MYSQL_ROOT_PASSWORD: cria
+      healthcheck:
+        test: mysqladmin ping -h 127.0.0.1 -uroot --password=$$MYSQL_ROOT_PASSWORD
+        start_period: 1s
+        interval: 5s
+        timeout: 5s
+        retries: 5
+      ports:
+        - '127.0.0.1:3306:3306'
+      volumes:
+        - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+        - './mysql_data:/var/lib/mysql:cached'
     # Cria-Front Moodle
     cria:
       platform: linux/amd64
-      image: 'docker.io/moodlehq/moodle-php-apache:8.1'
+      image: 'uitadmin/cria:latest'
+      environment:
+        MYSQL_DATABASE: cria
+        DB_USER: 'cria'
+        DB_PASS: 'root'
       ports:
-        - '127.0.0.1:8080:80'
+        - '127.0.0.1:80:80'
       volumes:
-        - './html:/var/www/html:cached'
-        - './moodledata:/var/www/moodledata:cached'
-        - './log:/var/log/apache2:cached'
+      - ./logs:/var/log/apache2
+      - ./moodledata:/var/www/moodledata
+      # This is a hack to copy the moodledata files from the container to the host
+      entrypoint: ["/bin/sh", "-c", "if [ ! -f /var/www/moodledata/.initialized ]; then cp -r /tmp/moodledata/* /var/www/moodledata/ && touch /var/www/moodledata/.initialized; fi && exec apache2-foreground"]
       depends_on:
+        - mysql
         - redis
     # Cria-Front CriaScraper
     criascraper:
@@ -163,7 +185,7 @@ cd cria-prod
         - ./qdrant_data/config:/qdrant/config/custom_config.yaml
     # Cria-Back Criadex
     criadex:
-      image: uitadmin/criadex:v1.7.1
+      image: uitadmin/criadex:v1.7.7
       ports:
         - "127.0.0.1:25574:25574"
       environment:
@@ -171,6 +193,8 @@ cd cria-prod
       volumes:
         - ./criadex_data:/home/cria/env
       depends_on:
+        mysql:
+          condition: service_healthy
         qdrant:
           condition: service_started
       healthcheck:
@@ -181,7 +205,7 @@ cd cria-prod
         retries: 5
     # Cria-Back Criabot
     criabot:
-      image: uitadmin/criabot:v1.7.1
+      image: uitadmin/criabot:v1.7.8
       ports:
         - "127.0.0.1:25575:25575"
       environment:
@@ -189,6 +213,8 @@ cd cria-prod
       volumes:
         - ./criabot_data:/home/cria/env
       depends_on:
+        mysql:
+          condition: service_healthy
         redis:
           condition: service_started
         criadex:
@@ -201,7 +227,7 @@ cd cria-prod
         retries: 5
     # Cria-Back CriaParse
     criaparse:
-      image: uitadmin/criaparse:v0.1.1
+      image: uitadmin/criaparse:v0.2.4
       ports:
         - "127.0.0.1:25576:25576"
       environment:
@@ -213,7 +239,7 @@ cd cria-prod
           condition: service_healthy
     # Cria-Back Embed API
     criaembed-api:
-      image: uitadmin/criaembed-api:v0.2.6
+      image: uitadmin/criaembed-api:v0.3.3
       ports:
         - "127.0.0.1:3003:3003"
       environment:
@@ -225,7 +251,7 @@ cd cria-prod
           condition: service_healthy
     # Cria-Back Embed App
     criaembed-app:
-      image: uitadmin/criaembed-app:v0.2.4
+      image: uitadmin/criaembed-app:v0.3.4
       ports:
         - "127.0.0.1:4000:4000"
       environment:
@@ -234,7 +260,7 @@ cd cria-prod
         - ./criaembed-app_data:/home/cria/env
       depends_on:
         criabot:
-          condition: service_healthy
+          condition: service_healthy  
 ```
 3. Start the containers
 ```
